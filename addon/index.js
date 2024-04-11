@@ -6,7 +6,12 @@ import FragmentArray from './array/fragment';
 import FragmentTransform from './transforms/fragment';
 import FragmentArrayTransform from './transforms/fragment-array';
 import ArrayTransform from './transforms/array';
-import { fragment, fragmentArray, array, fragmentOwner } from './attributes';
+import {
+  fragment,
+  fragmentArray,
+  array,
+  fragmentOwner
+} from './attributes';
 
 /**
   Ember Data Model Fragments

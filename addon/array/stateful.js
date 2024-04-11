@@ -76,7 +76,7 @@ const StatefulArray = EmberObject.extend(MutableArray, Copyable, {
     }
     // By using `get()`, the tracking system knows to pay attention to changes that occur.
     // eslint-disable-next-line ember/no-get
-    get(this, '[]');
+    this['[]'];
 
     return this._length;
   },
