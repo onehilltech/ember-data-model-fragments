@@ -30,8 +30,8 @@ class FragmentBehavior {
     assert(
       "The fragment's default value must be an object or null",
       defaultValue === null ||
-        typeOf(defaultValue) === 'object' ||
-        isFragment(defaultValue)
+      typeOf(defaultValue) === 'object' ||
+      isFragment(defaultValue)
     );
     if (defaultValue === null) {
       return null;
@@ -54,7 +54,7 @@ class FragmentBehavior {
     );
   }
 
-  pushData(fragment, canonical) {
+  pushData(identifier, fragment, canonical) {
     assert(
       'Fragment value must be a RecordData',
       fragment === null || fragment instanceof RecordData
@@ -193,8 +193,8 @@ class FragmentArrayBehavior {
     assert(
       "The fragment array's default value must be an array of fragments or null",
       defaultValue === null ||
-        (isArray(defaultValue) &&
-          defaultValue.every((v) => typeOf(v) === 'object' || isFragment(v)))
+      (isArray(defaultValue) &&
+        defaultValue.every((v) => typeOf(v) === 'object' || isFragment(v)))
     );
     if (defaultValue === null) {
       return null;
@@ -213,17 +213,17 @@ class FragmentArrayBehavior {
     });
   }
 
-  pushData(fragmentArray, canonical) {
+  pushData(identifier, fragmentArray, canonical) {
     assert(
       'Fragment array value must be an array of RecordData',
       fragmentArray === null ||
-        (isArray(fragmentArray) &&
-          fragmentArray.every((rd) => rd instanceof RecordData))
+      (isArray(fragmentArray) &&
+        fragmentArray.every((rd) => rd instanceof RecordData))
     );
     assert(
       'Fragment array canonical value must be an array of objects',
       canonical === null ||
-        (isArray(canonical) && canonical.every((v) => typeOf(v) === 'object'))
+      (isArray(canonical) && canonical.every((v) => typeOf(v) === 'object'))
     );
 
     if (canonical === null) {
@@ -250,7 +250,7 @@ class FragmentArrayBehavior {
     assert(
       'Fragment array value must be an array of RecordData',
       isArray(fragmentArray) &&
-        fragmentArray.every((rd) => rd instanceof RecordData)
+      fragmentArray.every((rd) => rd instanceof RecordData)
     );
     fragmentArray.forEach((fragment) => fragment._fragmentWillCommit());
   }
@@ -259,13 +259,13 @@ class FragmentArrayBehavior {
     assert(
       'Fragment array value must be an array of RecordData',
       fragmentArray === null ||
-        (isArray(fragmentArray) &&
-          fragmentArray.every((rd) => rd instanceof RecordData))
+      (isArray(fragmentArray) &&
+        fragmentArray.every((rd) => rd instanceof RecordData))
     );
     assert(
       'Fragment array canonical value must be an array of objects',
       canonical == null ||
-        (isArray(canonical) && canonical.every((v) => typeOf(v) === 'object'))
+      (isArray(canonical) && canonical.every((v) => typeOf(v) === 'object'))
     );
 
     if (canonical == null) {
@@ -303,7 +303,7 @@ class FragmentArrayBehavior {
     assert(
       'Fragment array value must be an array of RecordData',
       isArray(fragmentArray) &&
-        fragmentArray.every((rd) => rd instanceof RecordData)
+      fragmentArray.every((rd) => rd instanceof RecordData)
     );
     fragmentArray.forEach((fragment) => fragment._fragmentCommitWasRejected());
   }
@@ -312,7 +312,7 @@ class FragmentArrayBehavior {
     assert(
       'Fragment array value must be an array of RecordData',
       isArray(fragmentArray) &&
-        fragmentArray.every((rd) => rd instanceof RecordData)
+      fragmentArray.every((rd) => rd instanceof RecordData)
     );
     fragmentArray.forEach((fragment) => fragment._fragmentRollbackAttributes());
   }
@@ -321,7 +321,7 @@ class FragmentArrayBehavior {
     assert(
       'Fragment array value must be an array of RecordData',
       isArray(fragmentArray) &&
-        fragmentArray.every((rd) => rd instanceof RecordData)
+      fragmentArray.every((rd) => rd instanceof RecordData)
     );
     fragmentArray.forEach((fragment) => fragment._fragmentUnloadRecord());
   }
@@ -330,13 +330,13 @@ class FragmentArrayBehavior {
     assert(
       'Fragment array value must be an array of RecordData',
       value === null ||
-        (isArray(value) && value.every((rd) => rd instanceof RecordData))
+      (isArray(value) && value.every((rd) => rd instanceof RecordData))
     );
     assert(
       'Fragment array original value must be an array of RecordData',
       originalValue === null ||
-        (isArray(originalValue) &&
-          originalValue.every((rd) => rd instanceof RecordData))
+      (isArray(originalValue) &&
+        originalValue.every((rd) => rd instanceof RecordData))
     );
     return (
       !isArrayEqual(value, originalValue) ||
@@ -348,8 +348,8 @@ class FragmentArrayBehavior {
     assert(
       'Fragment array value must be an array of RecordData',
       fragmentArray === null ||
-        (isArray(fragmentArray) &&
-          fragmentArray.every((rd) => rd instanceof RecordData))
+      (isArray(fragmentArray) &&
+        fragmentArray.every((rd) => rd instanceof RecordData))
     );
     return fragmentArray === null
       ? null
@@ -360,8 +360,8 @@ class FragmentArrayBehavior {
     assert(
       'Fragment array value must be an array of RecordData',
       fragmentArray === null ||
-        (isArray(fragmentArray) &&
-          fragmentArray.every((rd) => rd instanceof RecordData))
+      (isArray(fragmentArray) &&
+        fragmentArray.every((rd) => rd instanceof RecordData))
     );
     return fragmentArray === null
       ? null
@@ -397,7 +397,7 @@ class ArrayBehavior {
     return defaultValue.slice();
   }
 
-  pushData(array, canonical) {
+  pushData(identifier, array, canonical) {
     assert('Array value must be an array', array === null || isArray(array));
     assert(
       'Array canonical value must be an array',
@@ -468,17 +468,17 @@ class ArrayBehavior {
 }
 
 export default class FragmentRecordData extends RecordData {
-  constructor(identifier, storeWrapper) {
-    super(identifier, storeWrapper);
+  createCache (identifier) {
+    super.createCache (identifier);
 
     const behavior = Object.create(null);
-    const definitions = this.storeWrapper.attributesDefinitionFor(
-      this.modelName
-    );
+    const definitions = this.storeWrapper.attributesDefinitionFor(identifier.type);
+
     for (const [key, definition] of Object.entries(definitions)) {
       if (!definition.isFragment) {
         continue;
       }
+
       switch (definition.kind) {
         case 'fragment-array':
           behavior[key] = new FragmentArrayBehavior(this, definition);
@@ -494,7 +494,16 @@ export default class FragmentRecordData extends RecordData {
           break;
       }
     }
+
     this._fragmentBehavior = behavior;
+  }
+
+  get storeWrapper () {
+    return this.__storeWrapper;
+  }
+
+  get modelName () {
+    return this.identifier.type;
   }
 
   _getFragmentDefault(key) {
@@ -711,7 +720,7 @@ export default class FragmentRecordData extends RecordData {
     return changedKeys;
   }
 
-  pushData(data, calculateChange) {
+  pushData(identifier, data, calculateChanges) {
     let changedFragmentKeys;
 
     const subFragmentsToProcess = [];
@@ -719,6 +728,8 @@ export default class FragmentRecordData extends RecordData {
       // copy so that we don't mutate the caller's data
       const attributes = Object.assign({}, data.attributes);
       data = Object.assign({}, data, { attributes });
+
+      //const { fragmentBehavior } = this.__cache.get (identifier);
 
       for (const [key, behavior] of Object.entries(this._fragmentBehavior)) {
         const canonical = data.attributes[key];
@@ -732,8 +743,10 @@ export default class FragmentRecordData extends RecordData {
       }
     }
 
-    // Wee need first the attributes to be setup before the fragment, to be able to access them (for polymorphic fragments for example)
-    const changedAttributeKeys = super.pushData(data, calculateChange);
+    // We need first the attributes to be setup before the fragment, to be able to access
+    // them (for polymorphic fragments for example).
+
+    const changedAttributeKeys = super.pushData(identifier, data, calculateChanges);
 
     if (data.attributes) {
       const newCanonicalFragments = {};
@@ -743,10 +756,10 @@ export default class FragmentRecordData extends RecordData {
           key in this._fragmentData
             ? this._fragmentData[key]
             : this._getFragmentDefault(key);
-        newCanonicalFragments[key] = behavior.pushData(current, canonical);
+        newCanonicalFragments[key] = behavior.pushData(identifier, current, canonical);
       });
 
-      if (calculateChange) {
+      if (calculateChanges) {
         changedFragmentKeys = this._changedFragmentKeys(newCanonicalFragments);
       }
 
@@ -1026,6 +1039,14 @@ export default class FragmentRecordData extends RecordData {
     internalModelFor(this).unloadRecord();
   }
 
+  /// Resettable state of the fragment record data.
+  __fragments = null;
+  __inFlightFragments = null;
+  __fragmentArrayCache = null;
+  __fragments = null;
+  __fragmentData = null;
+  _fragmentOwner = null;
+
   /**
    * The current dirty state
    */
@@ -1070,7 +1091,7 @@ export default class FragmentRecordData extends RecordData {
 
   get _fragmentsOrInFlight() {
     return this.__inFlightFragments &&
-      Object.keys(this.__inFlightFragments).length > 0
+    Object.keys(this.__inFlightFragments).length > 0
       ? this.__inFlightFragments
       : this.__fragments || {};
   }

@@ -30,48 +30,63 @@ function serializerForFragment(owner, normalizedModelName) {
   return serializer;
 }
 /**
-  @module ember-data-model-fragments
-*/
+ @module ember-data-model-fragments
+ */
 
 /**
-  @class Store
-  @namespace DS
-*/
+ @class Store
+ @namespace DS
+ */
 Store.reopen({
-  createRecordDataFor(type, id, lid, storeWrapper) {
+  createRecordDataFor(identifier, storeWrapper) {
     if (!gte('ember-data', '3.28.0')) {
       throw new Error(
         'This version of Ember Data Model Fragments is incompatible with Ember Data Versions below 3.28. See matrix at https://github.com/adopted-ember-addons/ember-data-model-fragments#compatibility for details.'
       );
     }
-    const identifier = this.identifierCache.getOrCreateRecordIdentifier({
-      type,
-      id,
-      lid,
-    });
-    return new FragmentRecordData(identifier, storeWrapper);
+
+    if (arguments.length === 4) {
+      identifier = this.identifierCache.getOrCreateRecordIdentifier ({
+        type: arguments[0],
+        id: arguments[1],
+        lid: arguments[2],
+      });
+
+      storeWrapper = arguments[3];
+    }
+
+    /*
+    this.__private_singleton_recordData = this.__private_singleton_recordData || new FragmentRecordData(storeWrapper);
+    this.__private_singleton_recordData.createCache(identifier);
+    return this.__private_singleton_recordData;
+    */
+
+    const recordData = new FragmentRecordData(storeWrapper);
+    recordData.createCache (identifier);
+
+    return recordData;
   },
 
   /**
-    Create a new fragment that does not yet have an owner record.
-    The properties passed to this method are set on the newly created
-    fragment.
+   Create a new fragment that does not yet have an owner record.
+   The properties passed to this method are set on the newly created
+   fragment.
 
-    To create a new instance of the `name` fragment:
+   To create a new instance of the `name` fragment:
 
-    ```js
-    store.createFragment('name', {
+   ```js
+   store.createFragment('name', {
       first: 'Alex',
       last: 'Routé'
     });
-    ```
+   ```
 
-    @method createRecord
-    @param {String} type
-    @param {Object} properties a hash of properties to set on the
-      newly created fragment.
-    @return {MF.Fragment} fragment
-  */
+   @method createRecord
+   @param {String} type
+   @param {Object} properties a hash of properties to set on the
+   newly created fragment.
+   @return {MF.Fragment} fragment
+   */
   createFragment(modelName, props) {
     assert(
       `The '${modelName}' model must be a subclass of MF.Fragment`,
@@ -87,13 +102,13 @@ Store.reopen({
   },
 
   /**
-    Returns true if the modelName is a fragment, false if not
+   Returns true if the modelName is a fragment, false if not
 
-    @method isFragment
-    @private
-    @param {String} the modelName to check if a fragment
-    @return {boolean}
-  */
+   @method isFragment
+   @private
+   @param {String} the modelName to check if a fragment
+   @return {boolean}
+   */
   isFragment(modelName) {
     if (modelName === 'application' || modelName === '-default') {
       return false;
@@ -126,11 +141,11 @@ Store.reopen({
 });
 
 /**
-  Override `Snapshot._attributes` to snapshot fragment attributes before they are
-  passed to the `DS.Model#serialize`.
+ Override `Snapshot._attributes` to snapshot fragment attributes before they are
+ passed to the `DS.Model#serialize`.
 
-  @private
-*/
+ @private
+ */
 const oldSnapshotAttributes = Object.getOwnPropertyDescriptor(
   Snapshot.prototype,
   '_attributes'
@@ -152,17 +167,17 @@ Object.defineProperty(Snapshot.prototype, '_attributes', {
 });
 
 /**
-  @class JSONSerializer
-  @namespace DS
-*/
+ @class JSONSerializer
+ @namespace DS
+ */
 JSONSerializer.reopen({
   /**
-    Enables fragment properties to have custom transforms based on the fragment
-    type, so that deserialization does not have to happen on the fly
+   Enables fragment properties to have custom transforms based on the fragment
+   type, so that deserialization does not have to happen on the fly
 
-    @method transformFor
-    @private
-  */
+   @method transformFor
+   @private
+   */
   transformFor(attributeType) {
     if (attributeType.indexOf('-mf-') !== 0) {
       return this._super(...arguments);
