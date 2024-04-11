@@ -771,9 +771,16 @@ export default class FragmentRecordData extends RecordData {
     }
 
     const changedKeys = mergeArrays(changedAttributeKeys, changedFragmentKeys);
+
     if (gte('ember-data', '4.5.0') && changedKeys?.length > 0) {
-      internalModelFor(this).notifyAttributes(changedKeys);
+      if (gte ('ember-data', '4.7.0')) {
+        notifyAttributes (this.__storeWrapper, identifier, changedKeys);
+      }
+      else {
+        internalModelFor(this).notifyAttributes(changedKeys);
+      }
     }
+
     // on ember-data 2.8 - 4.4, InternalModel.setupData will notify
     return changedKeys || [];
   }
@@ -849,8 +856,14 @@ export default class FragmentRecordData extends RecordData {
 
     const changedKeys = mergeArrays(changedAttributeKeys, changedFragmentKeys);
     if (gte('ember-data', '4.5.0') && changedKeys?.length > 0) {
-      internalModelFor(this).notifyAttributes(changedKeys);
+      if (gte ('ember-data', '4.7.0')) {
+        notifyAttributes (this.__storeWrapper, identifier, changedKeys);
+      }
+      else {
+        internalModelFor(this).notifyAttributes(changedKeys);
+      }
     }
+
     // on ember-data 2.8 - 4.4, InternalModel.adapterDidCommit will notify
     return changedKeys;
   }
@@ -1112,12 +1125,34 @@ export default class FragmentRecordData extends RecordData {
 
 function internalModelFor(recordData) {
   const store = recordData.storeWrapper._store;
+
   if (gte('ember-data', '4.5.0')) {
-    return store._instanceCache._internalModelForResource(
-      recordData.identifier
-    );
+    if (store._instanceCache._internalModelForResource) {
+      return store._instanceCache._internalModelForResource (
+        recordData.identifier
+      );
+    }
+    else {
+      record = store.instantiateRecord(
+        recordData.identifier,
+        properties || {},
+        this.__recordDataFor,
+        this.store._notificationManager
+      );
+    }
   }
   return store._internalModelForResource(recordData.identifier);
+}
+
+function notifyAttributes(storeWrapper, identifier, keys) {
+  if (!keys) {
+    storeWrapper.notifyChange(identifier, 'attributes');
+    return;
+  }
+
+  for (let i = 0; i < keys.length; i++) {
+    storeWrapper.notifyChange(identifier, 'attributes', keys[i]);
+  }
 }
 
 function isArrayEqual(a, b) {
