@@ -468,8 +468,20 @@ class ArrayBehavior {
 }
 
 export default class FragmentRecordData extends RecordData {
+  constructor (storeWrapper) {
+    super (storeWrapper);
+  }
+
   createCache (identifier) {
     super.createCache (identifier);
+
+    // The current architecture creates a new fragment record data instance even though
+    // we are derived from a singleton object, and the ember-data framework is optimized
+    // to use a singleton. We therefore store the identifier since it is used on other
+    // methods that do not have an idenfier parameter. When the FragmentRecordData moves
+    // to being a singleton design, then we need not cache the identifier.
+
+    this.identifier = identifier;
 
     const behavior = Object.create(null);
     const definitions = this.storeWrapper.attributesDefinitionFor(identifier.type);
@@ -625,9 +637,13 @@ export default class FragmentRecordData extends RecordData {
       attributes,
       this._fragmentGetRecord()
     );
+
     const recordData = this.storeWrapper.recordDataFor(type);
-    recordData.setFragmentOwner(this, definition.name);
-    recordData._fragmentPushData({ attributes });
+    const unwrapped = unwrapRecordDataFrom (recordData);
+
+    unwrapped.setFragmentOwner(this, definition.name);
+    unwrapped._fragmentPushData({ attributes });
+
     return recordData;
   }
 
@@ -728,8 +744,6 @@ export default class FragmentRecordData extends RecordData {
       // copy so that we don't mutate the caller's data
       const attributes = Object.assign({}, data.attributes);
       data = Object.assign({}, data, { attributes });
-
-      //const { fragmentBehavior } = this.__cache.get (identifier);
 
       for (const [key, behavior] of Object.entries(this._fragmentBehavior)) {
         const canonical = data.attributes[key];
@@ -1033,9 +1047,22 @@ export default class FragmentRecordData extends RecordData {
     }
     return internalModelFor(this).getRecord(properties);
   }
+
   _fragmentPushData(data) {
-    internalModelFor(this).setupData(data);
+    if (gte ('ember-data', '4.7.0')) {
+      // We are emulating the behavior of setupData().
+      if (this.isNew (this.identifier)) {
+        this.storeWrapper._store._notificationManager.notify (this.identifier, 'identity');
+      }
+
+      const recordData = this.storeWrapper._store._instanceCache.getRecordData (this.identifier);
+      recordData.pushData (this.identifier, data, false);
+    }
+    else {
+      internalModelFor(this).setupData(data);
+    }
   }
+
   _fragmentWillCommit() {
     internalModelFor(this).adapterWillCommit();
   }
@@ -1052,10 +1079,11 @@ export default class FragmentRecordData extends RecordData {
     internalModelFor(this).unloadRecord();
   }
 
-  // Resettable state of the fragment record data.
+  /// Resettable state of the fragment record data.
   __fragments = null;
   __inFlightFragments = null;
   __fragmentArrayCache = null;
+  __fragments = null;
   __fragmentData = null;
   _fragmentOwner = null;
 
@@ -1122,17 +1150,21 @@ export default class FragmentRecordData extends RecordData {
   }
 }
 
+function unwrapRecordDataFrom (recordData) {
+  if (gte ('ember-data', '4.7.0')) {
+    return recordData.__private_1_recordData;
+  }
+  else {
+    return recordData;
+  }
+}
+
 function internalModelFor(recordData) {
   const store = recordData.storeWrapper._store;
 
-  if (gte('ember-data', '4.5.0')) {
-    return store._instanceCache._internalModelForResource (
-      recordData.identifier
-    );
-  }
-  else {
-    return store._internalModelForResource(recordData.identifier);
-  }
+  return gte('ember-data', '4.5.0') ?
+    store._instanceCache._internalModelForResource (recordData.identifier) :
+    store._internalModelForResource(recordData.identifier);
 }
 
 function notifyAttributes(storeWrapper, identifier, keys) {

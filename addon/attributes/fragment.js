@@ -10,6 +10,8 @@ import {
 import metaTypeFor from '../util/meta-type-for';
 import isInstanceOfType from '../util/instance-of-type';
 
+import { gte } from 'ember-compatibility-helpers';
+
 /**
  `MF.fragment` defines an attribute on a `DS.Model` or `MF.Fragment`. Much
  like `DS.belongsTo`, it creates a property that returns a single fragment of
@@ -64,10 +66,15 @@ export default function fragment(type, options) {
   return computed({
     get(key) {
       const recordData = recordDataFor(this);
-      const fragment = recordData.getFragment(key);
+
+      const fragment = gte('ember-data', '4.7.0') ?
+        recordData.__private_1_recordData.getFragment(key).__private_1_recordData :
+        recordData.getFragment(key);
+
       if (fragment === null) {
         return null;
       }
+
       return fragment._fragmentGetRecord();
     },
     set(key, value) {
