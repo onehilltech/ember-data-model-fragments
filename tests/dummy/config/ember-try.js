@@ -8,6 +8,7 @@ module.exports = async function () {
     useYarn: true,
     scenarios: [
       {
+<<<<<<< HEAD
         name: 'ember-lts-3.28',
         npm: {
           devDependencies: {
@@ -17,6 +18,8 @@ module.exports = async function () {
         },
       },
       {
+=======
+>>>>>>> a731500 (v4.10.0...v4.12.2)
         name: 'ember-lts-4.4',
         npm: {
           devDependencies: {
@@ -40,6 +43,14 @@ module.exports = async function () {
           devDependencies: {
             'ember-source': '~4.8.0',
             'ember-data': '~4.8.0',
+          },
+        },
+      },
+      {
+        name: 'ember-lts-4.8',
+        npm: {
+          devDependencies: {
+            'ember-source': '~4.8.0',
           },
         },
       },
@@ -70,6 +81,7 @@ module.exports = async function () {
           },
         },
       },
+<<<<<<< HEAD
       {
         name: 'ember-classic',
         env: {
@@ -89,6 +101,8 @@ module.exports = async function () {
           },
         },
       },
+=======
+>>>>>>> a731500 (v4.10.0...v4.12.2)
       embroiderSafe(),
       embroiderOptimized(),
     ],

@@ -12,6 +12,10 @@ This package provides support for sub-models that can be treated much like `belo
 
 This project makes extensive use of private Ember Data APIs and is therefore sensitive to minor changes in new Ember Data releases, regardless of semver guarantees. Every effort is made to maintain compatibility with the latest version, but updates always take time. See the [contributing](#contributing) section if you'd like to help out :shipit:
 
+* Ember.js v4.12 or above
+* Ember CLI v4.4 or above
+* Node.js v14 or above
+
 Use the following table to decide which version of this project to use with your app:
 
 | Ember Data           | Model Fragments | Node.JS |
