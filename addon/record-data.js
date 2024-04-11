@@ -1052,11 +1052,10 @@ export default class FragmentRecordData extends RecordData {
     internalModelFor(this).unloadRecord();
   }
 
-  /// Resettable state of the fragment record data.
+  // Resettable state of the fragment record data.
   __fragments = null;
   __inFlightFragments = null;
   __fragmentArrayCache = null;
-  __fragments = null;
   __fragmentData = null;
   _fragmentOwner = null;
 
@@ -1127,21 +1126,13 @@ function internalModelFor(recordData) {
   const store = recordData.storeWrapper._store;
 
   if (gte('ember-data', '4.5.0')) {
-    if (store._instanceCache._internalModelForResource) {
-      return store._instanceCache._internalModelForResource (
-        recordData.identifier
-      );
-    }
-    else {
-      record = store.instantiateRecord(
-        recordData.identifier,
-        properties || {},
-        this.__recordDataFor,
-        this.store._notificationManager
-      );
-    }
+    return store._instanceCache._internalModelForResource (
+      recordData.identifier
+    );
   }
-  return store._internalModelForResource(recordData.identifier);
+  else {
+    return store._internalModelForResource(recordData.identifier);
+  }
 }
 
 function notifyAttributes(storeWrapper, identifier, keys) {
