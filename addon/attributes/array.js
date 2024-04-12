@@ -2,6 +2,8 @@ import { computed } from '@ember/object';
 import { isArray } from '@ember/array';
 import { assert } from '@ember/debug';
 import { recordDataFor } from '@ember-data/store/-private';
+import { gte } from 'ember-compatibility-helpers';
+
 import metaTypeFor from '../util/meta-type-for';
 import StatefulArray from '../array/stateful';
 
@@ -55,7 +57,10 @@ export default function array(type, options) {
   // eslint-disable-next-line ember/require-computed-property-dependencies
   return computed({
     get(key) {
-      const recordData = recordDataFor(this);
+      const recordData = gte ('ember-data', '4.7.0') ?
+        recordDataFor(this).__private_1_recordData :
+        recordDataFor(this);
+
       if (recordData.getFragment(key) === null) {
         return null;
       }
@@ -75,7 +80,11 @@ export default function array(type, options) {
         'You must pass an array or null to set an array',
         value === null || isArray(value)
       );
-      const recordData = recordDataFor(this);
+
+      const recordData = gte ('ember-data', '4.7.0') ?
+        recordDataFor(this).__private_1_recordData :
+        recordDataFor(this);
+
       if (value === null) {
         recordData.setDirtyFragment(key, null);
         return null;

@@ -65,11 +65,11 @@ export default function fragment(type, options) {
   // eslint-disable-next-line ember/require-computed-property-dependencies
   return computed({
     get(key) {
-      const recordData = recordDataFor(this);
+      const recordData = gte ('ember-data', '4.7.0') ?
+        recordDataFor(this).__private_1_recordData :
+        recordDataFor(this);
 
-      const fragment = gte('ember-data', '4.7.0') ?
-        recordData.__private_1_recordData.getFragment(key).__private_1_recordData :
-        recordData.getFragment(key);
+      const fragment = recordData.getFragment(key);
 
       if (fragment === null) {
         return null;
@@ -82,7 +82,11 @@ export default function fragment(type, options) {
         'You must pass a fragment or null to set a fragment',
         value === null || isFragment(value) || typeOf(value) === 'object'
       );
-      const recordData = recordDataFor(this);
+
+      const recordData = gte ('ember-data', '4.7.0') ?
+        recordDataFor(this).__private_1_recordData :
+        recordDataFor(this);
+
       if (value === null) {
         recordData.setDirtyFragment(key, null);
         return null;

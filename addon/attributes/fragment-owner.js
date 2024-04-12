@@ -1,7 +1,9 @@
 import { assert } from '@ember/debug';
 import { computed } from '@ember/object';
-import { isFragment } from '../fragment';
 import { recordDataFor } from '@ember-data/store/-private';
+import { gte } from 'ember-compatibility-helpers';
+
+import { isFragment } from '../fragment';
 
 /**
  `MF.fragmentOwner` defines a read-only attribute on a `MF.Fragment`
@@ -33,11 +35,17 @@ export default function fragmentOwner() {
       'Fragment owner properties can only be used on fragments.',
       isFragment(this)
     );
-    const recordData = recordDataFor(this);
+
+    const recordData = gte ('ember-data', '4.7.0') ?
+      recordDataFor(this).__private_1_recordData :
+      recordDataFor(this);
+
     const owner = recordData.getFragmentOwner();
+
     if (!owner) {
       return null;
     }
+
     return owner._fragmentGetRecord();
   })
     .meta({

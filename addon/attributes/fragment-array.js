@@ -3,6 +3,8 @@ import { computed } from '@ember/object';
 import { typeOf } from '@ember/utils';
 import { isArray } from '@ember/array';
 import { recordDataFor } from '@ember-data/store/-private';
+import { gte } from 'ember-compatibility-helpers';
+
 import { isFragment } from '../fragment';
 import metaTypeFor from '../util/meta-type-for';
 import FragmentArray from '../array/fragment';
@@ -64,7 +66,10 @@ export default function fragmentArray(type, options) {
   // eslint-disable-next-line ember/require-computed-property-dependencies
   return computed({
     get(key) {
-      const recordData = recordDataFor(this);
+      const recordData = gte ('ember-data', '4.7.0') ?
+        recordDataFor(this).__private_1_recordData :
+        recordDataFor(this);
+
       if (recordData.getFragment(key) === null) {
         return null;
       }
@@ -84,14 +89,19 @@ export default function fragmentArray(type, options) {
       assert(
         'You must pass an array of fragments, or null to set a fragmentArray',
         value === null ||
-          (isArray(value) &&
-            value.every((v) => isFragment(v) || typeOf(v) === 'object'))
+        (isArray(value) &&
+          value.every((v) => isFragment(v) || typeOf(v) === 'object'))
       );
-      const recordData = recordDataFor(this);
+
+      const recordData = gte ('ember-data', '4.7.0') ?
+        recordDataFor(this).__private_1_recordData :
+        recordDataFor(this);
+
       if (value === null) {
         recordData.setDirtyFragment(key, null);
         return null;
       }
+
       let fragmentArray = recordData._fragmentArrayCache[key];
       if (!fragmentArray) {
         fragmentArray = FragmentArray.create({
@@ -100,6 +110,7 @@ export default function fragmentArray(type, options) {
           recordData,
           key,
         });
+
         recordData._fragmentArrayCache[key] = fragmentArray;
       }
       fragmentArray._setFragments(value);
