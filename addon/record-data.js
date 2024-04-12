@@ -766,10 +766,15 @@ export default class FragmentRecordData extends RecordData {
       const newCanonicalFragments = {};
 
       subFragmentsToProcess.forEach(({ key, behavior, canonical }) => {
-        const current =
+        let current =
           key in this._fragmentData
             ? this._fragmentData[key]
             : this._getFragmentDefault(key);
+
+        if (current && current.__private_1_recordData) {
+          current = current.__private_1_recordData;
+        }
+
         newCanonicalFragments[key] = behavior.pushData(identifier, current, canonical);
       });
 
