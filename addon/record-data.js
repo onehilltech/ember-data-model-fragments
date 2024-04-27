@@ -546,7 +546,7 @@ export default class FragmentRecordData extends RecordData {
       fragment = this._getFragmentDefault(key);
     }
 
-    if (gte ('ember-data', '4.7.0') && fragment.__private_1_recordData) {
+    if (gte ('ember-data', '4.7.0') && fragment && fragment.__private_1_recordData) {
       fragment = fragment.__private_1_recordData;
     }
 
