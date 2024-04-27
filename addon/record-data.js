@@ -534,15 +534,23 @@ export default class FragmentRecordData extends RecordData {
   }
 
   getFragment(key) {
+    let fragment;
+
     if (key in this._fragments) {
-      return this._fragments[key];
+      fragment = this._fragments[key];
     } else if (key in this._inFlightFragments) {
-      return unwrapRecordDataFrom(this._inFlightFragments[key]);
+      fragment = this._inFlightFragments[key];
     } else if (key in this._fragmentData) {
-      return unwrapRecordDataFrom (this._fragmentData[key]);
+      fragment = this._fragmentData[key];
     } else {
-      return this._getFragmentDefault(key);
+      fragment = this._getFragmentDefault(key);
     }
+
+    if (gte ('ember-data', '4.7.0') && fragment.__private_1_recordData) {
+      fragment = fragment.__private_1_recordData;
+    }
+
+    return fragment;
   }
 
   hasFragment(key) {
@@ -804,7 +812,7 @@ export default class FragmentRecordData extends RecordData {
     return changedKeys || [];
   }
 
-  willCommit () {
+  willCommit() {
     for (const [key, behavior] of Object.entries(this._fragmentBehavior)) {
       const data = this.getFragment(key);
       if (data) {
@@ -814,7 +822,7 @@ export default class FragmentRecordData extends RecordData {
     this._inFlightFragments = this._fragments;
     this._fragments = null;
     // this.notifyStateChange();
-    super.willCommit (...arguments);
+    super.willCommit();
   }
 
   /**
@@ -866,7 +874,7 @@ export default class FragmentRecordData extends RecordData {
 
     this._updateChangedFragments();
 
-    const changedAttributeKeys = super.didCommit(...arguments);
+    const changedAttributeKeys = super.didCommit(data);
 
     // update fragment arrays
     Object.keys(newCanonicalFragments).forEach((key) =>
@@ -876,7 +884,7 @@ export default class FragmentRecordData extends RecordData {
     const changedKeys = mergeArrays(changedAttributeKeys, changedFragmentKeys);
     if (gte('ember-data', '4.5.0') && changedKeys?.length > 0) {
       if (gte ('ember-data', '4.7.0')) {
-        notifyAttributes (this.__storeWrapper, arguments[0], changedKeys);
+        notifyAttributes (this.__storeWrapper, identifier, changedKeys);
       }
       else {
         internalModelFor(this).notifyAttributes(changedKeys);
@@ -966,8 +974,7 @@ export default class FragmentRecordData extends RecordData {
       }
       this._fragmentArrayCache[key]?.destroy();
     }
-
-    super.unloadRecord(...arguments);
+    super.unloadRecord();
   }
 
   /**
