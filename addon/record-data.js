@@ -214,6 +214,10 @@ class FragmentArrayBehavior {
   }
 
   pushData(identifier, fragmentArray, canonical) {
+    if (gte ('ember-data', '4.7.0')) {
+      fragmentArray = this._unwrap (fragmentArray);
+    }
+
     assert(
       'Fragment array value must be an array of RecordData',
       fragmentArray === null ||
@@ -247,6 +251,10 @@ class FragmentArrayBehavior {
   }
 
   willCommit(fragmentArray) {
+    if (gte ('ember-data', '4.7.0')) {
+      fragmentArray = this._unwrap (fragmentArray);
+    }
+
     assert(
       'Fragment array value must be an array of RecordData',
       isArray(fragmentArray) &&
@@ -256,6 +264,10 @@ class FragmentArrayBehavior {
   }
 
   didCommit(fragmentArray, canonical) {
+    if (gte ('ember-data', '4.7.0')) {
+      fragmentArray = this._unwrap (fragmentArray);
+    }
+
     assert(
       'Fragment array value must be an array of RecordData',
       fragmentArray === null ||
@@ -300,6 +312,10 @@ class FragmentArrayBehavior {
   }
 
   commitWasRejected(fragmentArray) {
+    if (gte ('ember-data', '4.7.0')) {
+      fragmentArray = this._unwrap (fragmentArray);
+    }
+
     assert(
       'Fragment array value must be an array of RecordData',
       isArray(fragmentArray) &&
@@ -309,6 +325,10 @@ class FragmentArrayBehavior {
   }
 
   rollback(fragmentArray) {
+    if (gte ('ember-data', '4.7.0')) {
+      fragmentArray = this._unwrap (fragmentArray);
+    }
+
     assert(
       'Fragment array value must be an array of RecordData',
       isArray(fragmentArray) &&
@@ -318,6 +338,10 @@ class FragmentArrayBehavior {
   }
 
   unload(fragmentArray) {
+    if (gte ('ember-data', '4.7.0')) {
+      fragmentArray = this._unwrap (fragmentArray);
+    }
+
     assert(
       'Fragment array value must be an array of RecordData',
       isArray(fragmentArray) &&
@@ -345,6 +369,10 @@ class FragmentArrayBehavior {
   }
 
   currentState(fragmentArray) {
+    if (gte ('ember-data', '4.7.0')) {
+      fragmentArray = this._unwrap (fragmentArray);
+    }
+
     assert(
       'Fragment array value must be an array of RecordData',
       fragmentArray === null ||
@@ -357,6 +385,10 @@ class FragmentArrayBehavior {
   }
 
   canonicalState(fragmentArray) {
+    if (gte ('ember-data', '4.7.0')) {
+      fragmentArray = this._unwrap (fragmentArray);
+    }
+
     assert(
       'Fragment array value must be an array of RecordData',
       fragmentArray === null ||
@@ -366,6 +398,14 @@ class FragmentArrayBehavior {
     return fragmentArray === null
       ? null
       : fragmentArray.map((fragment) => fragment.getCanonicalState());
+  }
+
+  _unwrap (fragmentArray) {
+    if (fragmentArray === null) {
+      return null;
+    }
+
+    return fragmentArray.map (data => data.__private_1_recordData ? data.__private_1_recordData : data);
   }
 }
 
@@ -822,7 +862,7 @@ export default class FragmentRecordData extends RecordData {
     this._inFlightFragments = this._fragments;
     this._fragments = null;
     // this.notifyStateChange();
-    super.willCommit();
+    super.willCommit (...arguments);
   }
 
   /**
@@ -874,7 +914,7 @@ export default class FragmentRecordData extends RecordData {
 
     this._updateChangedFragments();
 
-    const changedAttributeKeys = super.didCommit(data);
+    const changedAttributeKeys = super.didCommit(...arguments);
 
     // update fragment arrays
     Object.keys(newCanonicalFragments).forEach((key) =>
@@ -908,7 +948,7 @@ export default class FragmentRecordData extends RecordData {
     }
     Object.assign(this._fragments, this._inFlightFragments);
     this._inFlightFragments = null;
-    super.commitWasRejected(identifier, errors);
+    super.commitWasRejected(...arguments);
   }
 
   rollbackAttributes() {
@@ -920,7 +960,7 @@ export default class FragmentRecordData extends RecordData {
       });
       this._fragments = null;
     }
-    const dirtyAttributeKeys = super.rollbackAttributes();
+    const dirtyAttributeKeys = super.rollbackAttributes(...arguments);
     this.notifyStateChange();
     this.fragmentDidReset();
     return mergeArrays(dirtyAttributeKeys, dirtyFragmentKeys);
@@ -974,7 +1014,7 @@ export default class FragmentRecordData extends RecordData {
       }
       this._fragmentArrayCache[key]?.destroy();
     }
-    super.unloadRecord();
+    super.unloadRecord(...arguments);
   }
 
   /**
