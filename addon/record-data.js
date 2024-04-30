@@ -884,7 +884,11 @@ export default class FragmentRecordData extends RecordData {
     }
   }
 
-  didCommit(data) {
+  didCommit(identifier, data) {
+    if (!gte('ember-data', '4.7.0')) {
+      data = identifier;
+    }
+
     if (data?.attributes) {
       // copy so that we don't mutate the caller's data
       const attributes = Object.assign({}, data.attributes);
