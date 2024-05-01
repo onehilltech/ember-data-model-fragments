@@ -586,8 +586,13 @@ export default class FragmentRecordData extends RecordData {
       fragment = this._getFragmentDefault(key);
     }
 
-    if (gte ('ember-data', '4.7.0') && fragment && fragment.__private_1_recordData) {
-      fragment = fragment.__private_1_recordData;
+    if (gte ('ember-data', '4.7.0')) {
+      if (isArray (fragment)) {
+        fragment = fragment.map (fragment => fragment && fragment.__private_1_recordData ? fragment.__private_1_recordData : fragment)
+      }
+      else if (fragment && fragment.__private_1_recordData) {
+        fragment = fragment.__private_1_recordData;
+      }
     }
 
     return fragment;
@@ -1113,7 +1118,7 @@ export default class FragmentRecordData extends RecordData {
       }
 
       const recordData = this.storeWrapper._store._instanceCache.getRecordData (this.identifier);
-      recordData.pushData (this.identifier, data, false);
+      recordData.pushData (this.identifier, data, true);
     }
     else {
       internalModelFor(this).setupData(data);
