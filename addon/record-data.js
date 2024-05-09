@@ -518,13 +518,15 @@ export default class FragmentRecordData extends RecordData {
     // The current architecture creates a new fragment record data instance even though
     // we are derived from a singleton object, and the ember-data framework is optimized
     // to use a singleton. We therefore store the identifier since it is used on other
-    // methods that do not have an idenfier parameter. When the FragmentRecordData moves
+    // methods that do not have an identifier parameter. If the FragmentRecordData moves
     // to being a singleton design, then we need not cache the identifier.
 
     this.identifier = identifier;
 
     const behavior = Object.create(null);
-    const definitions = this.storeWrapper.attributesDefinitionFor(identifier.type);
+    const definitions = gte ('ember-data', '4.7.0') ?
+        this.storeWrapper.getSchemaDefinitionService ().attributesDefinitionFor (identifier) :
+        this.storeWrapper.attributesDefinitionFor (identifier.type);
 
     for (const [key, definition] of Object.entries(definitions)) {
       if (!definition.isFragment) {
