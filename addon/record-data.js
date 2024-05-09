@@ -1126,19 +1126,29 @@ export default class FragmentRecordData extends RecordData {
   }
 
   _fragmentWillCommit() {
-    internalModelFor(this).adapterWillCommit();
+    if (!gte ('ember-data', '4.7.0')) {
+      internalModelFor (this).adapterWillCommit();
+    }
   }
   _fragmentDidCommit(data) {
-    internalModelFor(this).adapterDidCommit(data);
+    if (!gte ('ember-data', '4.7.0')) {
+      internalModelFor (this).adapterDidCommit (data);
+    }
   }
   _fragmentRollbackAttributes() {
-    internalModelFor(this).rollbackAttributes();
+    if (!gte ('ember-data', '4.7.0')) {
+      internalModelFor (this).rollbackAttributes ();
+    }
   }
   _fragmentCommitWasRejected() {
-    internalModelFor(this).adapterDidInvalidate();
+    if (!gte ('ember-data', '4.7.0')) {
+      internalModelFor (this).adapterDidInvalidate ();
+    }
   }
   _fragmentUnloadRecord() {
-    internalModelFor(this).unloadRecord();
+    if (!gte ('ember-data', '4.7.0')) {
+      internalModelFor (this).unloadRecord ();
+    }
   }
 
   /// Resettable state of the fragment record data.
@@ -1213,7 +1223,7 @@ export default class FragmentRecordData extends RecordData {
 }
 
 function unwrapRecordDataFrom (recordData) {
-  if (gte ('ember-data', '4.7.0')) {
+  if (gte ('ember-data', '4.7.0') && recordData.__private_1_recordData) {
     return recordData.__private_1_recordData;
   }
   else {
@@ -1225,8 +1235,8 @@ function internalModelFor(recordData) {
   const store = recordData.storeWrapper._store;
 
   return gte('ember-data', '4.5.0') ?
-    store._instanceCache._internalModelForResource (recordData.identifier) :
-    store._internalModelForResource(recordData.identifier);
+    unwrapRecordDataFrom (store._instanceCache.getRecordData (recordData.identifier)) :
+    store._internalModelForResource (recordData.identifier);
 }
 
 function notifyAttributes(storeWrapper, identifier, keys) {
