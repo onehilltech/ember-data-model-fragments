@@ -2,12 +2,13 @@ import { assert } from '@ember/debug';
 import Store from '@ember-data/store';
 import Model from '@ember-data/model';
 // eslint-disable-next-line ember/use-ember-data-rfc-395-imports
-import { Snapshot, normalizeModelName } from 'ember-data/-private';
+import { Snapshot } from 'ember-data/-private';
 import JSONSerializer from '@ember-data/serializer/json';
 import FragmentRecordData from './record-data';
 import { default as Fragment } from './fragment';
 import { isPresent } from '@ember/utils';
 import { getOwner } from '@ember/application';
+import { dasherize } from "@ember/string";
 import { gte } from 'ember-compatibility-helpers';
 
 function serializerForFragment(owner, normalizedModelName) {
@@ -130,7 +131,7 @@ Store.reopen({
     );
 
     const owner = getOwner(this);
-    const normalizedModelName = normalizeModelName(modelName);
+    const normalizedModelName = dasherize(modelName);
 
     if (this.isFragment(normalizedModelName)) {
       return serializerForFragment(owner, normalizedModelName);
