@@ -912,8 +912,8 @@ export default class FragmentRecordData extends RecordData {
       }
       const fragment =
         key in this._inFlightFragments
-          ? this._inFlightFragments[key]
-          : this._fragmentData[key];
+          ? unwrapRecordDataFrom (this._inFlightFragments[key])
+          : unwrapRecordDataFrom (this._fragmentData[key]);
       newCanonicalFragments[key] = behavior.didCommit(fragment, canonical);
     }
 
@@ -1225,7 +1225,7 @@ export default class FragmentRecordData extends RecordData {
 }
 
 function unwrapRecordDataFrom (recordData) {
-  if (gte ('ember-data', '4.7.0') && recordData.__private_1_recordData) {
+  if (gte ('ember-data', '4.7.0') && recordData && recordData.__private_1_recordData) {
     return recordData.__private_1_recordData;
   }
   else {
