@@ -703,7 +703,7 @@ export default class FragmentRecordData extends RecordData {
   }
 
   hasChangedAttributes() {
-    return super.hasChangedAtts (this.identifier) || this.hasChangedFragments();
+    return super.hasChangedAttrs (this.identifier) || this.hasChangedFragments();
   }
 
   hasChangedFragments() {
