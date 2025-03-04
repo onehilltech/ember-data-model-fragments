@@ -703,7 +703,7 @@ export default class FragmentRecordData extends RecordData {
   }
 
   hasChangedAttributes() {
-    return super.hasChangedAttributes() || this.hasChangedFragments();
+    return super.hasChangedAtts (this.identifier) || this.hasChangedFragments();
   }
 
   hasChangedFragments() {
@@ -1083,8 +1083,8 @@ export default class FragmentRecordData extends RecordData {
     if (key && gte('ember-data', '4.5.0')) {
       this.storeWrapper.notifyPropertyChange(
         this.modelName,
-        this.id,
-        this.clientId,
+        this.identifier.id,
+        this.identifier.lid,
         key
       );
     } else {
