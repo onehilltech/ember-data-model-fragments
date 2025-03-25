@@ -10,6 +10,7 @@ import { isPresent } from '@ember/utils';
 import { getOwner } from '@ember/application';
 import { dasherize } from "@ember/string";
 import { gte } from 'ember-compatibility-helpers';
+import unwrapRecordDataFrom from "./util/unwrap-record-data-from";
 
 function serializerForFragment(owner, normalizedModelName) {
   let serializer = owner.lookup(`serializer:${normalizedModelName}`);
@@ -93,12 +94,19 @@ Store.reopen({
       `The '${modelName}' model must be a subclass of MF.Fragment`,
       this.isFragment(modelName)
     );
+
     let recordData;
-    if (gte('ember-data', '4.5.0')) {
+
+    if (gte ('ember-data', '4.7.0')) {
+      recordData = unwrapRecordDataFrom (this.__instanceCache.__recordDataFor({ type: modelName }, true));
+    }
+    else if (gte('ember-data', '4.5.0')) {
       recordData = this._instanceCache.recordDataFor({ type: modelName }, true);
-    } else {
+    }
+    else {
       recordData = this.recordDataFor({ type: modelName }, true);
     }
+
     return recordData._fragmentGetRecord(props);
   },
 

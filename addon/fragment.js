@@ -4,6 +4,7 @@ import Ember from 'ember';
 // DS.Model gets munged to add fragment support, which must be included first
 import { Model } from './ext';
 import { recordDataFor } from '@ember-data/store/-private';
+import unwrapRecordDataFrom from './util/unwrap-record-data-from';
 
 /**
   @module ember-data-model-fragments
@@ -144,7 +145,7 @@ export function getActualFragmentType(declaredType, options, data, owner) {
 
 // Sets the owner/key values on a fragment
 export function setFragmentOwner(fragment, record, key) {
-  const recordData = recordDataFor(fragment);
+  const recordData = unwrapRecordDataFrom(recordDataFor(fragment));
   recordData.setFragmentOwner(record, key);
 
   // Notify any observers of `fragmentOwner` properties

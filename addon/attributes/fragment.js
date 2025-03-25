@@ -11,6 +11,7 @@ import metaTypeFor from '../util/meta-type-for';
 import isInstanceOfType from '../util/instance-of-type';
 
 import { gte } from 'ember-compatibility-helpers';
+import unwrapRecordDataFrom from "../util/unwrap-record-data-from";
 
 /**
  `MF.fragment` defines an attribute on a `DS.Model` or `MF.Fragment`. Much
@@ -65,10 +66,7 @@ export default function fragment(type, options) {
   // eslint-disable-next-line ember/require-computed-property-dependencies
   return computed({
     get(key) {
-      const recordData = gte ('ember-data', '4.7.0') ?
-        recordDataFor(this).__private_1_recordData :
-        recordDataFor(this);
-
+      const recordData = unwrapRecordDataFrom(recordDataFor(this));
       const fragment = recordData.getFragment(key);
 
       if (fragment === null) {
@@ -83,9 +81,7 @@ export default function fragment(type, options) {
         value === null || isFragment(value) || typeOf(value) === 'object'
       );
 
-      const recordData = gte ('ember-data', '4.7.0') ?
-        recordDataFor(this).__private_1_recordData :
-        recordDataFor(this);
+      const recordData = unwrapRecordDataFrom(recordDataFor(this));
 
       if (value === null) {
         recordData.setDirtyFragment(key, null);
@@ -105,7 +101,10 @@ export default function fragment(type, options) {
       if (fragmentRecordData?.modelName !== actualType) {
         const fragment = this.store.createFragment(actualType, value);
         setFragmentOwner(fragment, recordData, key);
-        recordData.setDirtyFragment(key, recordDataFor(fragment));
+        recordData.setDirtyFragment(
+          key,
+          unwrapRecordDataFrom(recordDataFor(fragment))
+        );
         return fragment;
       }
       const fragment = fragmentRecordData._fragmentGetRecord();
